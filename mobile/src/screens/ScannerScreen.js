@@ -1,35 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, Button } from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
 export default function ScannerScreen() {
-  const [hasPermission, setHasPermission] = useState(null);
-  const [scanned, setScanned] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
+  const [facing, setFacing] = useState('back');
 
-  useEffect(() => {
-    (async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
-  }, []);
+  if (!permission) {
+    return <View />;
+  }
 
-  if (hasPermission === null) return <Text>Requesting camera permission...</Text>;
-  if (hasPermission === false) return <Text>No access to camera</Text>;
+  if (!permission.granted) {
+    return (
+      <View style={styles.container}>
+        <Text>We need camera access to continue.</Text>
+        <Button onPress={requestPermission} title="Grant Permission" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <BarCodeScanner
-        onBarCodeScanned={scanned ? undefined : ({ data }) => {
-          setScanned(true);
-          alert(`Scanned: ${data}`);
-        }}
-        style={StyleSheet.absoluteFillObject}
+      <CameraView
+        style={styles.camera}
+        facing={facing}
+        onBarcodeScanned={({ data }) => alert(`Scanned: ${data}`)}
       />
-      {scanned && <Button title="Scan Again" onPress={() => setScanned(false)} />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 }
+  container: { flex: 1, justifyContent: 'center' },
+  camera: { flex: 1 },
 });

@@ -2,7 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import AppNavigator from './src/navigation/AppNavigator';
+
 import { getToken } from './src/utils/authStorage';
+
+import { StatusBar } from 'expo-status-bar';
+import { ThemeProvider } from './src/contexts/ThemeContext';
+import { SettingsProvider } from './src/contexts/SettingsContext';
+
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -31,5 +37,11 @@ export default function App() {
     <NavigationContainer>
       <AppNavigator initialRouteName={initialRouteName} />
     </NavigationContainer>
+    <SettingsProvider>
+      <ThemeProvider>
+        <StatusBar style="auto" />
+        <AppNavigator />
+      </ThemeProvider>
+    </SettingsProvider>
   );
 }

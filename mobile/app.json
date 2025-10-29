@@ -21,7 +21,10 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.dhravya12.mobile"
+      "package": "com.dhravya12.mobile",
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -29,6 +32,12 @@
     "plugins": [
       "expo-web-browser",
       "expo-barcode-scanner"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "196e383f-e48a-49d0-b8f6-3a65bd5149ed"
+      }
+    },
+    "owner": "dhravyashetty"
   }
 }

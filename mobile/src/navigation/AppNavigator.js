@@ -1,6 +1,5 @@
 // src/navigation/AppNavigator.js
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,11 +13,11 @@ import ScannerScreen from '../screens/ScannerScreen';
 import RecipesScreen from '../screens/RecipesScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import ItemDetailsScreen from '../screens/ItemDetailsScreen';
+import RecipeDetailsScreen from '../screens/RecipeDetailsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Bottom Tabs
 function AppTabs() {
   return (
     <Tab.Navigator
@@ -72,44 +71,36 @@ function AppTabs() {
   );
 }
 
-export default function AppNavigator() {
+export default function AppNavigator({ initialRouteName = 'Splash' }) {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
-        {/* Auth */}
-        <Stack.Screen name="Splash" component={SplashScreen} />
-        <Stack.Screen name="SignIn" component={SignInScreen} />
-        <Stack.Screen name="SignUp" component={SignUpScreen} />
+    <Stack.Navigator initialRouteName={initialRouteName} screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Splash" component={SplashScreen} />
+      <Stack.Screen name="SignIn" component={SignInScreen} />
+      <Stack.Screen name="SignUp" component={SignUpScreen} />
+      <Stack.Screen name="AppTabs" component={AppTabs} />
 
-        {/* Main App */}
-        <Stack.Screen name="AppTabs" component={AppTabs} />
-        <Stack.Screen name="Home" component={HomeScreen} /> {/* Direct access */}
-
-        {/* Modal */}
-        <Stack.Screen
-          name="ItemDetails"
-          component={ItemDetailsScreen}
-          options={{
-            presentation: 'modal',
-            headerShown: true,
-            headerTintColor: '#2E7D32',
-            headerTitle: 'Item Details',
-            headerStyle: { backgroundColor: '#F9FFFB' },
-          }}
-        />
-        // In your Stack.Navigator
-<Stack.Screen
-  name="RecipeDetails"
-  component={RecipeDetailsScreen}
-  options={{
-    presentation: 'modal',
-    headerShown: true,
-    headerTitle: 'Recipe',
-    headerTintColor: '#2E7D32',
-    headerStyle: { backgroundColor: '#F9FFFB' },
-  }}
-/>
-      </Stack.Navigator>
-    </NavigationContainer>
+      <Stack.Screen
+        name="ItemDetails"
+        component={ItemDetailsScreen}
+        options={{
+          presentation: 'modal',
+          headerShown: true,
+          headerTintColor: '#2E7D32',
+          headerTitle: 'Item Details',
+          headerStyle: { backgroundColor: '#F9FFFB' },
+        }}
+      />
+      <Stack.Screen
+        name="RecipeDetails"
+        component={RecipeDetailsScreen}
+        options={{
+          presentation: 'modal',
+          headerShown: true,
+          headerTitle: 'Recipe',
+          headerTintColor: '#2E7D32',
+          headerStyle: { backgroundColor: '#F9FFFB' },
+        }}
+      />
+    </Stack.Navigator>
   );
 }

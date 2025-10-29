@@ -1,5 +1,5 @@
 // src/screens/SignInScreen.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,10 +12,11 @@ import {
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import { LinearGradient } from "expo-linear-gradient";
+import { storeToken, storeUser } from '../utils/authStorage';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const SignInScreen = ({ navigation }) => {
+export default function SignInScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -25,20 +26,65 @@ const SignInScreen = ({ navigation }) => {
     androidClientId: "YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com",
   });
 
-  React.useEffect(() => {
+  // Google login
+  useEffect(() => {
     if (response?.type === "success") {
-      Alert.alert("Success", "Signed in with Google!");
-      navigation.replace("Home"); // Direct to Home
+      const { authentication } = response;
+      handleGoogleLogin(authentication?.accessToken);
     }
-  }, [response, navigation]);
+  }, [response]);
 
-  const handleEmailSignIn = () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please fill all fields");
-      return;
+  const handleGoogleLogin = async (googleToken) => {
+    if (!googleToken) return Alert.alert("Error", "Google token missing");
+
+    try {
+      const res = await fetch('http://10.209.226.168:5000/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: googleToken }),
+      });
+      const data = await res.json();
+      if (data.token) {
+        await storeToken(data.token);
+        await storeUser(data);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "AppTabs" }]
+        });
+      } else {
+        Alert.alert("Error", data.message || "Google login failed");
+      }
+    } catch (err) {
+      Alert.alert("Error", "Network error");
     }
-    Alert.alert("Success", `Welcome back!`);
-    navigation.replace("Home"); // Direct to Home
+  };
+
+  // Email login
+  const handleEmailSignIn = async () => {
+    if (!email || !password) {
+      return Alert.alert("Error", "Please fill all fields");
+    }
+
+    try {
+      const res = await fetch('http://10.209.226.168:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (data.token) {
+        await storeToken(data.token);
+        await storeUser(data);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "AppTabs" }]
+        });
+      } else {
+        Alert.alert("Error", data.message || "Login failed");
+      }
+    } catch (err) {
+      Alert.alert("Error", "Network error");
+    }
   };
 
   return (
@@ -77,17 +123,11 @@ const SignInScreen = ({ navigation }) => {
           disabled={!request}
           onPress={() => promptAsync()}
         >
-          <Image
-            source={require("../../assets/google-icon.png")}
-            style={styles.googleIcon}
-          />
+          <Image source={require("../../assets/google-icon.png")} style={styles.googleIcon} />
           <Text style={styles.googleText}>Continue with Google</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate("SignUp")}
-          style={styles.link}
-        >
+        <TouchableOpacity onPress={() => navigation.navigate("SignUp")} style={styles.link}>
           <Text style={styles.linkText}>
             Don’t have an account? <Text style={styles.bold}>Sign Up</Text>
           </Text>
@@ -95,7 +135,7 @@ const SignInScreen = ({ navigation }) => {
       </View>
     </LinearGradient>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", padding: 24 },
@@ -145,5 +185,3 @@ const styles = StyleSheet.create({
   linkText: { color: "#666" },
   bold: { color: "#4CAF50", fontWeight: "600" },
 });
-
-export default SignInScreen;

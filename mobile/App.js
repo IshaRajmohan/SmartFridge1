@@ -1,33 +1,35 @@
-// src/navigation/AppNavigator.js
-import React from 'react';
+// mobile/App.js
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import AppNavigator from './src/navigation/AppNavigator';
+import { getToken } from './src/utils/authStorage';
 
-// Import your screens
-import SplashScreen from './src/screens/SplashScreen';
-import SignInScreen from './src/screens/SignInScreen';
-import SignUpScreen from './src/screens/SignUpScreen';
-import HomeScreen from './src/screens/HomeScreen'; // ← you already have this
+export default function App() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [initialRouteName, setInitialRouteName] = useState('Splash');
 
-const Stack = createStackNavigator();
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = await getToken();
+        setInitialRouteName(token ? 'AppTabs' : 'Splash');
+      } catch (error) {
+        console.error('Auth check failed:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkAuth();
+  }, []);
 
-const AppNavigator = () => {
+  if (isLoading) {
+    return null; // Or a loading screen component
+  }
+
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Splash"
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <Stack.Screen name="Splash" component={SplashScreen} />
-        <Stack.Screen name="SignIn" component={SignInScreen} />
-        <Stack.Screen name="SignUp" component={SignUpScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} />
-        {/* Add other screens like ItemDetails, Recipes, etc. */}
-      </Stack.Navigator>
+      <AppNavigator initialRouteName={initialRouteName} />
     </NavigationContainer>
   );
-};
-
-export default AppNavigator;
+}

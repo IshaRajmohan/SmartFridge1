@@ -1,5 +1,5 @@
 // src/screens/SignUpScreen.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,10 +12,11 @@ import {
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import { LinearGradient } from "expo-linear-gradient";
+import { storeToken, storeUser } from '../utils/authStorage';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const SignUpScreen = ({ navigation }) => {
+export default function SignUpScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -25,20 +26,59 @@ const SignUpScreen = ({ navigation }) => {
     androidClientId: "YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com",
   });
 
-  React.useEffect(() => {
+  // Google signup
+  useEffect(() => {
     if (response?.type === "success") {
-      Alert.alert("Success", "Account created with Google!");
-      navigation.replace("Home");
+      const { authentication } = response;
+      handleGoogleSignup(authentication?.accessToken);
     }
-  }, [response, navigation]);
+  }, [response]);
 
-  const handleEmailSignUp = () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please fill all fields");
-      return;
+  const handleGoogleSignup = async (googleToken) => {
+    if (!googleToken) return Alert.alert("Error", "Google token missing");
+
+    try {
+      const res = await fetch('http://10.209.226.168:5000/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: googleToken }),
+      });
+      const data = await res.json();
+      if (data.token) {
+        await storeToken(data.token);
+        await storeUser(data);
+        navigation.replace("AppTabs", { screen: "Home" });
+      } else {
+        Alert.alert("Error", data.message || "Google signup failed");
+      }
+    } catch (err) {
+      Alert.alert("Error", "Network error");
     }
-    Alert.alert("Success", `Account created!`);
-    navigation.replace("Home");
+  };
+
+  // Email signup
+  const handleEmailSignUp = async () => {
+    if (!email || !password) {
+      return Alert.alert("Error", "Please fill all fields");
+    }
+
+    try {
+      const res = await fetch('http://10.209.226.168:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: email.split('@')[0], email, password }),
+      });
+      const data = await res.json();
+      if (data.token) {
+        await storeToken(data.token);
+        await storeUser(data);
+        navigation.replace("AppTabs", { screen: "Home" });
+      } else {
+        Alert.alert("Error", data.message || "Signup failed");
+      }
+    } catch (err) {
+      Alert.alert("Error", "Network error");
+    }
   };
 
   return (
@@ -77,17 +117,11 @@ const SignUpScreen = ({ navigation }) => {
           disabled={!request}
           onPress={() => promptAsync()}
         >
-          <Image
-            source={require("../../assets/google-icon.png")}
-            style={styles.googleIcon}
-          />
+          <Image source={require("../../assets/google-icon.png")} style={styles.googleIcon} />
           <Text style={styles.googleText}>Sign up with Google</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate("SignIn")}
-          style={styles.link}
-        >
+        <TouchableOpacity onPress={() => navigation.navigate("SignIn")} style={styles.link}>
           <Text style={styles.linkText}>
             Already have an account? <Text style={styles.bold}>Sign In</Text>
           </Text>
@@ -95,9 +129,8 @@ const SignUpScreen = ({ navigation }) => {
       </View>
     </LinearGradient>
   );
-};
+}
 
-// Same styles as SignInScreen
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", padding: 24 },
   card: {
@@ -146,5 +179,3 @@ const styles = StyleSheet.create({
   linkText: { color: "#666" },
   bold: { color: "#4CAF50", fontWeight: "600" },
 });
-
-export default SignUpScreen;

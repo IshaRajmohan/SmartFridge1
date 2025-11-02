@@ -1,117 +1,123 @@
-// src/screens/RecipesScreen.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
-  Text,
   FlatList,
+  Button,
+  ActivityIndicator,
+  Text,
   TouchableOpacity,
-  StyleSheet,
-  Image,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+  Modal,
+  ScrollView,
+} from "react-native";
+import RecipeCard from "../components/RecipeCard";
 
-export default function RecipesScreen({ navigation }) {
-  // Mock data: recipes that use items from your fridge
-  const [recipes] = useState([
-    {
-      id: '1',
-      title: 'Tomato & Milk Smoothie',
-      time: '5 mins',
-      servings: 2,
-      ingredients: ['Tomatoes', 'Milk'],
-      image: require('../../assets/recipe-smoothie.png'), // ← add later
-      expiringSoon: ['Tomatoes'],
-    },
-    {
-      id: '2',
-      title: 'Creamy Tomato Soup',
-      time: '20 mins',
-      servings: 4,
-      ingredients: ['Tomatoes', 'Milk'],
-      image: require('../../assets/recipe-soup.png'),
-      expiringSoon: ['Milk'],
-    },
-  ]);
+const RecipesScreen = () => {
+  const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const renderRecipe = ({ item }) => {
-    const hasExpiring = item.expiringSoon.length > 0;
+  const API_BASE = "http://192.168.0.115:5001/api/recipes";
 
-    return (
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => navigation.navigate('RecipeDetails', { recipe: item })}
-      >
-        <Image source={item.image} style={styles.image} resizeMode="cover" />
-        <View style={styles.content}>
-          <Text style={styles.title}>{item.title}</Text>
-          <View style={styles.row}>
-            <Ionicons name="time-outline" size={16} color="#666" />
-            <Text style={styles.meta}>{item.time}</Text>
-            <Ionicons name="people-outline" size={16} color="#666" style={{ marginLeft: 12 }} />
-            <Text style={styles.meta}>{item.servings} servings</Text>
-          </View>
-          {hasExpiring && (
-            <View style={styles.expiringBadge}>
-              <Text style={styles.expiringText}>
-                Use {item.expiringSoon.join(', ')} soon!
-              </Text>
-            </View>
-          )}
-        </View>
-      </TouchableOpacity>
-    );
+  // 🧩 Fetch recipes based on ingredients
+  const fetchRecipes = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/generate`);
+      const data = await res.json();
+      setRecipes(data);
+    } catch (error) {
+      console.error("Error fetching recipes:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // 🍽️ Fetch full recipe details by ID
+  const fetchRecipeDetails = async (id) => {
+    try {
+      setDetailLoading(true);
+      const res = await fetch(`${API_BASE}/${id}`);
+      const data = await res.json();
+      setSelectedRecipe(data);
+      setModalVisible(true);
+    } catch (error) {
+      console.error("Error fetching recipe details:", error);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecipes();
+  }, []);
+
+  if (loading) {
+    return (
+      <ActivityIndicator size="large" color="blue" style={{ marginTop: 50 }} />
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Recipes for You</Text>
+    <View style={{ flex: 1, padding: 10 }}>
+      <Button title="Generate Recipes" onPress={fetchRecipes} />
+
       <FlatList
         data={recipes}
-        renderItem={renderRecipe}
-        keyExtractor={item => item.id}
-        showsVerticalScrollIndicator={false}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <TouchableOpacity onPress={() => fetchRecipeDetails(item.id)}>
+            <RecipeCard recipe={item} />
+          </TouchableOpacity>
+        )}
         ListEmptyComponent={
-          <Text style={styles.empty}>No recipes yet. Add items to your fridge!</Text>
+          <Text style={{ textAlign: "center", marginTop: 20 }}>
+            No recipes found. Add more ingredients!
+          </Text>
         }
       />
+
+      {/* 🍲 Modal for detailed recipe info */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
+          {detailLoading ? (
+            <ActivityIndicator size="large" color="blue" />
+          ) : selectedRecipe ? (
+            <ScrollView>
+              <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }}>
+                {selectedRecipe.title}
+              </Text>
+              <Text style={{ color: "gray", marginBottom: 10 }}>
+                Ready in {selectedRecipe.readyInMinutes} mins • Serves {selectedRecipe.servings}
+              </Text>
+              <Text style={{ marginBottom: 10 }}>{selectedRecipe.summary?.replace(/<[^>]*>/g, "")}</Text>
+
+              <Text style={{ fontWeight: "bold", marginTop: 10 }}>Ingredients:</Text>
+              {selectedRecipe.ingredients?.map((ing, index) => (
+                <Text key={index}>• {ing}</Text>
+              ))}
+
+              {selectedRecipe.instructions && (
+                <>
+                  <Text style={{ fontWeight: "bold", marginTop: 15 }}>Instructions:</Text>
+                  <Text>{selectedRecipe.instructions.replace(/<[^>]*>/g, "")}</Text>
+                </>
+              )}
+
+              <Button title="Close" onPress={() => setModalVisible(false)} />
+            </ScrollView>
+          ) : (
+            <Text>No recipe selected</Text>
+          )}
+        </View>
+      </Modal>
     </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 16 },
-  header: {
-    fontSize: 26,
-    fontWeight: '600',
-    color: '#2E7D32',
-    marginBottom: 16,
-  },
-  card: {
-    backgroundColor: '#F9FFFB',
-    borderRadius: 16,
-    marginBottom: 16,
-    overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-  },
-  image: { width: '100%', height: 140 },
-  content: { padding: 16 },
-  title: { fontSize: 18, fontWeight: '600', color: '#2E7D32', marginBottom: 8 },
-  row: { flexDirection: 'row', alignItems: 'center' },
-  meta: { fontSize: 14, color: '#666', marginLeft: 4 },
-  expiringBadge: {
-    marginTop: 10,
-    backgroundColor: '#FFEBEE',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderColor: '#FFCDD2',
-  },
-  expiringText: { color: '#D32F2F', fontSize: 13, fontWeight: '600' },
-  empty: { textAlign: 'center', color: '#999', fontSize: 16, marginTop: 40 },
-});
+export default RecipesScreen;

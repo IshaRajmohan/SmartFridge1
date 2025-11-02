@@ -34,14 +34,14 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      <AppNavigator initialRouteName={initialRouteName} />
-    </NavigationContainer>
-    <SettingsProvider>
-      <ThemeProvider>
+  <SettingsProvider>
+    <ThemeProvider>
+      <NavigationContainer>
         <StatusBar style="auto" />
-        <AppNavigator />
-      </ThemeProvider>
-    </SettingsProvider>
-  );
+        <AppNavigator initialRouteName={initialRouteName} />
+      </NavigationContainer>
+    </ThemeProvider>
+  </SettingsProvider>
+);
+
 }

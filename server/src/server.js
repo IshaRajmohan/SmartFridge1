@@ -5,7 +5,7 @@ import connectDB from "./config/db.js";
 import ingredientRoutes from "./routes/ingredientroutes.js";
 import recipeRoutes from "./routes/recipeRoutes.js";
 import cors from "cors";
-
+import authRoutes from './routes/authRoutes.js';
 dotenv.config();
 connectDB();
 
@@ -20,6 +20,8 @@ app.use(cors());
 // 🧭 Mount routes
 app.use("/api/ingredients", ingredientRoutes);
 app.use("/api/recipes", recipeRoutes);
+// server.js or app.js
+app.use('/api/auth', authRoutes);
 
 // 🩺 Default route for testing
 app.get("/", (req, res) => {

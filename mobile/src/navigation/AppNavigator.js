@@ -74,7 +74,7 @@ function AppTabs() {
 export default function AppNavigator({ initialRouteName = 'Splash' }) {
   return (
     <Stack.Navigator initialRouteName={initialRouteName} screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Splash" component={RecipesScreen} />
+      <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="SignIn" component={SignInScreen} />
       <Stack.Screen name="SignUp" component={SignUpScreen} />
       <Stack.Screen name="AppTabs" component={AppTabs} />

@@ -19,7 +19,7 @@ export default function SignUpScreen({ navigation }) {
       return Alert.alert("Error", "Please fill all fields");
 
     try {
-      const res = await fetch("http://10.209.226.168:5000/api/auth/register", {
+      const res = await fetch("http://<ip>:5001/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: email.split("@")[0], email, password }),

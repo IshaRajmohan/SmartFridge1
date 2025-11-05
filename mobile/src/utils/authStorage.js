@@ -1,5 +1,6 @@
 // src/utils/authStorage.js
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { eachDayOfInterval } from 'date-fns';
 
 const TOKEN_KEY = 'userToken';
 const USER_KEY = 'userData';
@@ -15,3 +16,4 @@ export const getUser = async () => {
   const data = await AsyncStorage.getItem(USER_KEY);
   return data ? JSON.parse(data) : null;
 };
+

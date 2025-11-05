@@ -1,5 +1,4 @@
-// src/screens/SignInScreen.js
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -12,31 +11,26 @@ import { LinearGradient } from "expo-linear-gradient";
 import { storeToken, storeUser } from "../utils/authStorage";
 
 export default function SignInScreen({ navigation }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
 
-  // Email login
   const handleEmailSignIn = async () => {
-    if (!email || !password) {
-      return Alert.alert("Error", "Please fill all fields");
-    }
+    if (!email || !password) return Alert.alert("Error", "Fill all fields");
 
     try {
-      const res = await fetch("http://<ip>:5001/api/auth/login", {
+      const res = await fetch("http://10.209.226.168:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
+
       if (data.token) {
         await storeToken(data.token);
         await storeUser(data);
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "AppTabs" }],
-        });
+        navigation.reset({ index: 0, routes: [{ name: "AppTabs" }] });
       } else {
-        Alert.alert("Error", data.message || "Login failed");
+        Alert.alert("Error", data.message);
       }
     } catch (err) {
       Alert.alert("Error", "Network error");
@@ -116,6 +110,21 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   btnText: { color: "#fff", fontWeight: "600", fontSize: 16 },
+  divider: { flexDirection: "row", alignItems: "center", marginVertical: 16 },
+  line: { flex: 1, height: 1, backgroundColor: "#C8E6C9" },
+  orText: { marginHorizontal: 12, color: "#666" },
+  // googleBtn: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  //   borderWidth: 1,
+  //   borderColor: "#ddd",
+  //   borderRadius: 12,
+  //   padding: 14,
+  //   marginBottom: 16,
+  // },
+  // googleIcon: { width: 20, height: 20, marginRight: 10 },
+  // googleText: { color: "#333", fontWeight: "500" },
   link: { alignItems: "center" },
   linkText: { color: "#666" },
   bold: { color: "#4CAF50", fontWeight: "600" },

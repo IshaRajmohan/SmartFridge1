@@ -18,7 +18,7 @@ export default function SignInScreen({ navigation }) {
     if (!email || !password) return Alert.alert("Error", "Fill all fields");
 
     try {
-      const res = await fetch("http://10.209.226.168:5000/api/auth/login", {
+      const res = await fetch("http://192.168.0.185:5001/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -33,7 +33,7 @@ export default function SignInScreen({ navigation }) {
         Alert.alert("Error", data.message);
       }
     } catch (err) {
-      Alert.alert("Error", "Network error");
+      Alert.alert("Error", "Network error: " + err.message);
     }
   };
 

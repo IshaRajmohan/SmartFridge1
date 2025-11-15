@@ -13,28 +13,29 @@ import { storeToken, storeUser } from "../utils/authStorage";
 export default function SignUpScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
 
   const handleEmailSignUp = async () => {
-    if (!email || !password)
+    if (!email || !password || !name)
       return Alert.alert("Error", "Please fill all fields");
 
     try {
-      const res = await fetch("http://10.209.226.168:5000/api/auth/register", {
+      const res = await fetch("http://192.168.0.185:5001/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: email.split("@")[0], email, password }),
+        body: JSON.stringify({ name, email, password }),
       });
 
       const data = await res.json();
       if (data.token) {
         await storeToken(data.token);
         await storeUser(data);
-        navigation.replace("AppTabs", { screen: "Home" });
+        navigation.reset({ index: 0, routes: [{ name: "AppTabs" }] });
       } else {
         Alert.alert("Error", data.message || "Signup failed");
       }
     } catch (err) {
-      Alert.alert("Error", "Network error");
+      Alert.alert("Error", "Network error: " + err.message);
     }
   };
 
@@ -43,6 +44,12 @@ export default function SignUpScreen({ navigation }) {
       <View style={styles.card}>
         <Text style={styles.title}>Create Account</Text>
 
+        <TextInput
+          style={styles.input}
+          placeholder="Full Name"
+          value={name}
+          onChangeText={setName}
+        />
         <TextInput
           style={styles.input}
           placeholder="Email"

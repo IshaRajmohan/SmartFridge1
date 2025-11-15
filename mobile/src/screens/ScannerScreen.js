@@ -7,11 +7,13 @@ import {
   SafeAreaView, 
   TextInput, 
   TouchableOpacity,
-  Alert 
+  Alert,
+  Picker
 } from 'react-native';
 
 export default function ScannerScreen({ navigation }) {
   const [itemName, setItemName] = useState('');
+  const [expiryDays, setExpiryDays] = useState(7);
 
   const handleAddItem = () => {
     if (!itemName.trim()) {
@@ -22,10 +24,10 @@ export default function ScannerScreen({ navigation }) {
     const newItem = {
       id: Date.now().toString(),
       name: itemName.trim(),
-      expiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+      expiry: new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // X days from now
     };
 
-    navigation.navigate('Home', { newItem });
+    navigation.navigate('AppTabs', { screen: 'Home', params: { newItem } });
     setItemName('');
   };
 
@@ -42,6 +44,22 @@ export default function ScannerScreen({ navigation }) {
           autoCapitalize="words"
           autoFocus
         />
+
+        <View style={styles.pickerContainer}>
+          <Text style={styles.pickerLabel}>Expires in:</Text>
+          <Picker
+            selectedValue={expiryDays}
+            style={styles.picker}
+            onValueChange={(itemValue) => setExpiryDays(itemValue)}
+          >
+            <Picker.Item label="1 day" value={1} />
+            <Picker.Item label="2 days" value={2} />
+            <Picker.Item label="3 days" value={3} />
+            <Picker.Item label="1 week" value={7} />
+            <Picker.Item label="2 weeks" value={14} />
+            <Picker.Item label="1 month" value={30} />
+          </Picker>
+        </View>
 
         <TouchableOpacity 
           style={styles.addButton}
@@ -81,6 +99,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#fff',
     marginBottom: 20,
+  },
+  pickerContainer: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  pickerLabel: {
+    fontSize: 16,
+    marginBottom: 10,
+    textAlign: 'left',
+  },
+  picker: {
+    height: 50,
+    width: '100%',
   },
   addButton: {
     backgroundColor: '#4CAF50',

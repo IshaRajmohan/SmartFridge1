@@ -1,3 +1,4 @@
+// routes/ingredientRoutes.js
 import express from "express";
 import { getIngredients, addIngredient } from "../controllers/ingredientController.js";
 

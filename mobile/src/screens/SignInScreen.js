@@ -18,12 +18,14 @@ export default function SignInScreen({ navigation }) {
     if (!email || !password) return Alert.alert("Error", "Fill all fields");
 
     try {
-      const res = await fetch("http://10.209.226.168:5000/api/auth/login", {
+      const res = await fetch("http://10.153.225.168:5001/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+      console.log("SignIn Response Status:", res.status);
       const data = await res.json();
+      console.log("SignIn Response Data:", data);
 
       if (data.token) {
         await storeToken(data.token);
@@ -33,7 +35,8 @@ export default function SignInScreen({ navigation }) {
         Alert.alert("Error", data.message);
       }
     } catch (err) {
-      Alert.alert("Error", "Network error");
+      console.log("SignIn Network Error:", err);
+      Alert.alert("Error", "Network error: " + err.message);
     }
   };
 

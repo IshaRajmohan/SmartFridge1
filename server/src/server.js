@@ -2,8 +2,13 @@
 import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
-import ingredientRoutes from "./routes/ingredientroutes.js";
+
+// ─── Import Routes ─────────────────────────────────────
+import authRoutes from "./routes/authRoutes.js";
+import ingredientRoutes from "./routes/ingredientRoutes.js";
 import recipeRoutes from "./routes/recipeRoutes.js";
+import foodRoutes from "./routes/foodRoutes.js";
+
 import cors from "cors";
 
 dotenv.config();
@@ -11,17 +16,19 @@ connectDB();
 
 const app = express();
 
-// 🧠 Body parser middleware (required for POST JSON)
+// 🧠 Body parser middleware
 app.use(express.json());
 
-// 🛡️ Enable CORS if frontend will connect
+// 🛡️ Enable CORS
 app.use(cors());
 
-// 🧭 Mount routes
+// 🧭 Mount API routes
+app.use("/api/auth", authRoutes);
 app.use("/api/ingredients", ingredientRoutes);
 app.use("/api/recipes", recipeRoutes);
+app.use("/api/food", foodRoutes);
 
-// 🩺 Default route for testing
+// 🩺 Health check
 app.get("/", (req, res) => {
   res.send("FridgeWise API running...");
 });

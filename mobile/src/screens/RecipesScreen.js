@@ -18,7 +18,7 @@ const RecipesScreen = () => {
   const [detailLoading, setDetailLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
-  const API_BASE = "http://<ip>:5001/api/recipes";
+  const API_BASE = "http://10.153.225.168:5001/api/recipes";
 
   // 🧩 Fetch recipes based on ingredients
   const fetchRecipes = async () => {

@@ -19,13 +19,15 @@ export default function SignUpScreen({ navigation }) {
       return Alert.alert("Error", "Please fill all fields");
 
     try {
-      const res = await fetch("http://10.209.226.168:5000/api/auth/register", {
+      const res = await fetch("http://10.153.225.168:5001/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: email.split("@")[0], email, password }),
       });
 
+      console.log("SignUp Response Status:", res.status);
       const data = await res.json();
+      console.log("SignUp Response Data:", data);
       if (data.token) {
         await storeToken(data.token);
         await storeUser(data);
@@ -34,7 +36,8 @@ export default function SignUpScreen({ navigation }) {
         Alert.alert("Error", data.message || "Signup failed");
       }
     } catch (err) {
-      Alert.alert("Error", "Network error");
+      console.log("SignUp Network Error:", err);
+      Alert.alert("Error", "Network error: " + err.message);
     }
   };
 
